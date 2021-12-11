@@ -10,14 +10,13 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useTheme } from "@mui/material/styles";
+
 
 require("react-big-calendar/lib/css/react-big-calendar.css");
 
 const localizer = momentLocalizer(moment);
 
 function Schedule() {
-  const theme = useTheme();
 
   const [events, setEvents] = useState([]);
   const [title, setTitle] = useState("");
@@ -31,6 +30,7 @@ function Schedule() {
   const handleClose = () => {
     setOpenEvent(false);
     setOpenSlot(false);
+    console.log(events)
   };
 
   const handleSlotSelected = (slotInfo) => {
@@ -61,6 +61,25 @@ function Schedule() {
     setEvents(newArr);
     handleClose();
   };
+
+  const deleteEvent = () => {
+    let updatedEvents = events.filter(
+      event => event["start"] !== start
+    );
+    setEvents(updatedEvents);
+    handleClose();
+  }
+
+  const updateEvent = () => {
+    const index = events.findIndex(event => event === clickedEvent);
+    const updatedEvent = [...events];
+    updatedEvent[index].title = title;
+    updatedEvent[index].desc = desc;
+    updatedEvent[index].start = start;
+    updatedEvent[index].end = end;
+    setEvents(updatedEvent);
+    handleClose();
+  }
 
   return (
     <div id="Calendar">
@@ -94,6 +113,8 @@ function Schedule() {
           <br />
           <TextField
             label="Description"
+            multiLine
+            maxRows={4}
             onChange={(e) => {
               setDesc(e.target.value);
             }}
@@ -133,16 +154,6 @@ function Schedule() {
           >
             Cancel
           </Button>
-          {/* <Button
-            autoFocus
-            label="Delete"
-            variant="contained"
-            color="error"
-            keyboardFocused={true}
-            onClick={handleClose}
-          >
-            Delete
-          </Button> */}
           <Button
             autoFocus
             label="Submit"
@@ -156,7 +167,89 @@ function Schedule() {
           </Button>
         </DialogActions>
       </Dialog>
-
+      
+      <Dialog modal={false} open={openEvent} onRequestClose={handleClose}>
+        <DialogTitle id="responsive-dialog-title">
+          {`Edit/View an appointment on ${moment(start).format("MMMM Do YYYY")}`}
+        </DialogTitle>
+        <br />
+        <DialogContent>
+          <TextField
+            label="Title"
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+            }}
+          />
+          <br />
+          <br />
+          <TextField
+            label="Description"
+            multiLine
+            rows={4}
+            value={desc}
+            onChange={(e) => {
+              setDesc(e.target.value);
+            }}
+          />
+          <br />
+          <br />
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <TimePicker
+              label="Start Time"
+              value={start}
+              onChange={(newValue) => {
+                setStart(newValue);
+              }}
+              renderInput={(params) => <TextField {...params} />}
+            />
+            <br />
+            <br />
+            <TimePicker
+              label="End Time"
+              value={end}
+              onChange={(newValue) => {
+                setEnd(newValue);
+              }}
+              renderInput={(params) => <TextField {...params} />}
+            />
+          </LocalizationProvider>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            autoFocus
+            label="Cancel"
+            variant="contained"
+            color="warning"
+            primary={false}
+            keyboardFocused={true}
+            onClick={handleClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            autoFocus
+            label="Delete"
+            variant="contained"
+            color="error"
+            keyboardFocused={true}
+            onClick={deleteEvent}
+          >
+            Delete
+          </Button>
+          <Button
+            autoFocus
+            label="Submit"
+            variant="contained"
+            color="success"
+            primary={true}
+            keyboardFocused={true}
+            onClick={updateEvent}
+          >
+            Confirm Edit
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
